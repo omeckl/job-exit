@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum DisplayMode {
+  FIRST_NAME
+  FULL_NAME
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  fullName    String?
+  photoUrl    String?
+  locale      String   @default("hu")
+  isAdmin     Boolean  @default(false)
+  isBanned    Boolean  @default(false)
+  emailVerifiedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  listings     Listing[]
+  applications Application[]
+  sessions     Session[]
+  loginTokens  LoginToken[]
+  savedSearches SavedSearch[]
+}
+
+model LoginToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  redirectTo String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id     String @id @default(cuid())
+  ref    Int    @unique @default(autoincrement())
+  slug   String @unique
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  status        ListingStatus @default(ACTIVE)
+  hiddenByAdmin Boolean       @default(false)
+  contentDeleted Boolean      @default(false)
+
+  // advertiser presentation
+  displayMode DisplayMode @default(FIRST_NAME)
+
+  // position
+  title            String
+  field            String
+  domain           String
+  seniority        String?
+  experienceNeeded String?
+  employmentType   String?
+  schedule         String?
+  hasReports       Boolean @default(false)
+  reportCount      Int?
+  travel           String?
+
+  // location and language
+  country       String
+  city          String?
+  workMode      WorkMode
+  officeDays    Int?
+  remoteLimit   String?
+  workLanguages String[]
+  listingLanguage String
+
+  // timing
+  lastWorkingDay DateTime
+
+  // pay
+  salary   String?
+  benefits String[]
+
+  // reality of the job
+  tasks         String[]
+  techTags      String[]
+  goodParts     String?
+  hardParts     String?
+  teamSize      String?
+  reportsTo     String?
+
+  // company
+  companyName        String?
+  companyUrl         String?
+  companyDescription String?
+  industry           String?
+  companySize        String?
+
+  // application
+  applicantPrompt String?
+  dealbreakers    String[]
+
+  viewCount      Int       @default(0)
+  foundSuccessor Boolean?
+  closedAt       DateTime?
+  reminderSentAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  applications Application[]
+
+  @@index([status, createdAt])
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  applicantId String
+  applicant   User   @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  linkedinUrl       String
+  intro             String
+  salaryExpectation String?
+  noticePeriod      String?
+
+  handoverMessage String?
+  handoverSentAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([listingId, applicantId])
+  @@index([listingId, createdAt])
+}
+
+model SavedSearch {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query      String
+  lastSentAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model TechTag {
+  id       String @id @default(cuid())
+  name     String @unique
+  category String
+}
+
+model City {
+  id      String @id @default(cuid())
+  name    String
+  country String
+
+  @@unique([name, country])
+  @@index([name])
+}
