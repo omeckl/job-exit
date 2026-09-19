@@ -104,17 +104,23 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
       <section className="card space-y-4">
         <h2 className="text-lg font-semibold">{t.dashboard.closeTitle}</h2>
-        <form action={closeListingAction} className="flex flex-wrap items-center gap-3">
-          <input type="hidden" name="locale" value={locale} />
-          <input type="hidden" name="id" value={listing.id} />
+        <div className="flex flex-wrap items-center gap-3">
           <span className="text-sm text-neutral-700">{t.dashboard.closeQuestion}</span>
-          <button type="submit" name="foundSuccessor" value="yes" className="btn-primary">
-            {t.dashboard.yes}
-          </button>
-          <button type="submit" name="foundSuccessor" value="no" className="btn-secondary">
-            {t.dashboard.no}
-          </button>
-        </form>
+          <form action={closeListingAction.bind(null, true)}>
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="id" value={listing.id} />
+            <button type="submit" className="btn-primary">
+              {t.dashboard.yes}
+            </button>
+          </form>
+          <form action={closeListingAction.bind(null, false)}>
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="id" value={listing.id} />
+            <button type="submit" className="btn-secondary">
+              {t.dashboard.no}
+            </button>
+          </form>
+        </div>
 
         <form action={deleteListingAction}>
           <input type="hidden" name="locale" value={locale} />

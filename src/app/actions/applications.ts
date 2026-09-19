@@ -34,7 +34,15 @@ export async function applyAction(_state: ApplyState, formData: FormData): Promi
     where: { id: listingId },
     include: { owner: true },
   });
-  if (!listing || listing.status !== "ACTIVE" || listing.hiddenByAdmin) return { error: "closed" };
+  if (
+    !listing ||
+    listing.status !== "ACTIVE" ||
+    listing.hiddenByAdmin ||
+    listing.owner.isBanned ||
+    !listing.owner.emailVerifiedAt
+  ) {
+    return { error: "closed" };
+  }
 
   const signedIn = await currentUser();
   const email = signedIn?.email ?? String(formData.get("email") ?? "").trim().toLowerCase();

@@ -13,7 +13,7 @@ import { firstNameOf } from "@/components/ListingCard";
 async function getListing(slug: string) {
   return prisma.listing.findUnique({
     where: { slug },
-    include: { owner: { select: { id: true, fullName: true, photoUrl: true, emailVerifiedAt: true } } },
+    include: { owner: { select: { id: true, fullName: true, photoUrl: true, emailVerifiedAt: true, isBanned: true } } },
   });
 }
 
@@ -61,7 +61,10 @@ export default async function ListingPage({
   const user = await currentUser();
   const isOwner = user?.id === listing.ownerId;
   const unavailable =
-    listing.status === "CLOSED" || listing.hiddenByAdmin || !listing.owner.emailVerifiedAt;
+    listing.status === "CLOSED" ||
+    listing.hiddenByAdmin ||
+    listing.owner.isBanned ||
+    !listing.owner.emailVerifiedAt;
 
   if (unavailable && !isOwner) {
     return (

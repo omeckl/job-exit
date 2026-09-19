@@ -230,10 +230,9 @@ export async function updateListingAction(
   redirect(`/${locale}/h/${updated.slug}`);
 }
 
-export async function closeListingAction(formData: FormData) {
+export async function closeListingAction(foundSuccessor: boolean, formData: FormData) {
   const locale = String(formData.get("locale") ?? "hu");
   const id = String(formData.get("id") ?? "");
-  const foundSuccessor = formData.get("foundSuccessor") === "yes";
   const user = await currentUser();
   if (!user) redirect(`/${locale}/login`);
 
