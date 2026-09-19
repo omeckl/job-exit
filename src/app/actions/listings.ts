@@ -21,7 +21,15 @@ const listingSchema = z.object({
   workMode: z.enum(["ONSITE", "HYBRID", "REMOTE"]),
   workLanguages: z.array(z.string()).min(1),
   listingLanguage: z.string().min(1),
-  lastWorkingDay: z.string().min(4),
+  lastWorkingDay: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine((value) => {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return false;
+      const year = date.getUTCFullYear();
+      return year >= 2000 && year <= 2100;
+    }),
   seniority: z.string().optional().or(z.literal("")),
   experienceNeeded: z.string().max(200).optional().or(z.literal("")),
   employmentType: z.string().optional().or(z.literal("")),

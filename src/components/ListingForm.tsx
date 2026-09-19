@@ -228,6 +228,8 @@ export default function ListingForm({
               name="lastWorkingDay"
               type="date"
               required
+              min="2000-01-01"
+              max="2100-12-31"
               defaultValue={listing?.lastWorkingDay.toISOString().slice(0, 10) ?? ""}
               className="input"
             />
